@@ -57,7 +57,7 @@ export default function DecisionDetailPage() {
     const formData = new FormData(e.currentTarget);
     try {
       toast.loading('Saving decision...', { id: 'decide' });
-      await decisionsApi.decide(id, {
+      await decisionsApi.makeDecision(id, {
         selectedOption: formData.get('selectedOption') as string,
         finalConfidence: parseInt(formData.get('finalConfidence') as string, 10),
         decisionRationale: formData.get('decisionRationale') as string,
@@ -75,12 +75,12 @@ export default function DecisionDetailPage() {
     const formData = new FormData(e.currentTarget);
     try {
       toast.loading('Recording outcome...', { id: 'outcome' });
-      await decisionsApi.outcome(id, {
+      await decisionsApi.recordOutcome(id, {
         description: formData.get('description') as string,
-        expectationMatch: formData.get('expectationMatch') as 'BETTER' | 'WORSE' | 'AS_EXPECTED' | 'DIFFERENT',
+        expectationMatch: formData.get('expectationMatch') as 'Much better' | 'Better' | 'About the same' | 'Worse' | 'Much worse',
         satisfaction: parseInt(formData.get('satisfaction') as string, 10),
-        surprises: (formData.get('surprises') as string) || undefined,
-        wouldDoDifferently: (formData.get('wouldDoDifferently') as string) || undefined,
+        surprises: (formData.get('surprises') as string) || '',
+        wouldDoDifferently: (formData.get('wouldDoDifferently') as string) || '',
       });
       toast.success('Outcome recorded!', { id: 'outcome' });
       fetchDecision();
@@ -93,7 +93,7 @@ export default function DecisionDetailPage() {
     if (!id) return;
     try {
       toast.loading('Generating AI Replay...', { id: 'replay' });
-      await decisionsApi.replay(id);
+      await decisionsApi.generateReplay(id);
       toast.success('Replay generated!', { id: 'replay' });
       fetchDecision();
     } catch (err: any) {
@@ -153,7 +153,6 @@ export default function DecisionDetailPage() {
                 <strong className="block text-sm text-gray-600">Confidence</strong>
                 <ConfidenceMeter value={decision.analysis.confidence} />
               </div>
-              </div>
             </div>
           )}
 
@@ -197,10 +196,11 @@ export default function DecisionDetailPage() {
                   <label className="label">Did it match expectations?</label>
                   <select name="expectationMatch" required className="input-field">
                     <option value="">Select...</option>
-                    <option value="BETTER">Better than expected</option>
-                    <option value="WORSE">Worse than expected</option>
-                    <option value="AS_EXPECTED">Exactly as expected</option>
-                    <option value="DIFFERENT">Completely different</option>
+                    <option value="Much better">Much better than expected</option>
+                    <option value="Better">Better than expected</option>
+                    <option value="About the same">Exactly as expected</option>
+                    <option value="Worse">Worse than expected</option>
+                    <option value="Much worse">Much worse than expected</option>
                   </select>
                 </div>
                 <div>
