@@ -51,6 +51,56 @@ export default function DecisionDetailPage() {
     }
   };
 
+  const handleMakeDecision = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!id) return;
+    const formData = new FormData(e.currentTarget);
+    try {
+      toast.loading('Saving decision...', { id: 'decide' });
+      await decisionsApi.decide(id, {
+        selectedOption: formData.get('selectedOption') as string,
+        finalConfidence: parseInt(formData.get('finalConfidence') as string, 10),
+        decisionRationale: formData.get('decisionRationale') as string,
+      });
+      toast.success('Decision recorded!', { id: 'decide' });
+      fetchDecision();
+    } catch (err: any) {
+      toast.error('Failed to save decision', { id: 'decide' });
+    }
+  };
+
+  const handleRecordOutcome = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!id) return;
+    const formData = new FormData(e.currentTarget);
+    try {
+      toast.loading('Recording outcome...', { id: 'outcome' });
+      await decisionsApi.outcome(id, {
+        description: formData.get('description') as string,
+        expectationMatch: formData.get('expectationMatch') as 'BETTER' | 'WORSE' | 'AS_EXPECTED' | 'DIFFERENT',
+        satisfaction: parseInt(formData.get('satisfaction') as string, 10),
+        surprises: (formData.get('surprises') as string) || undefined,
+        wouldDoDifferently: (formData.get('wouldDoDifferently') as string) || undefined,
+      });
+      toast.success('Outcome recorded!', { id: 'outcome' });
+      fetchDecision();
+    } catch (err: any) {
+      toast.error('Failed to record outcome', { id: 'outcome' });
+    }
+  };
+
+  const handleGenerateReplay = async () => {
+    if (!id) return;
+    try {
+      toast.loading('Generating AI Replay...', { id: 'replay' });
+      await decisionsApi.replay(id);
+      toast.success('Replay generated!', { id: 'replay' });
+      fetchDecision();
+    } catch (err: any) {
+      toast.error('Failed to generate replay', { id: 'replay' });
+    }
+  };
+
   const handleDelete = async () => {
     if (!id) return;
     if (window.confirm('Are you sure you want to delete this decision?')) {
@@ -102,6 +152,109 @@ export default function DecisionDetailPage() {
               <div className="mb-4">
                 <strong className="block text-sm text-gray-600">Confidence</strong>
                 <ConfidenceMeter value={decision.analysis.confidence} />
+              </div>
+              </div>
+            </div>
+          )}
+
+          {/* Make Decision Form (Shows after analysis is done) */}
+          {decision.status === 'ANALYZED' && (
+            <div className="card">
+              <h2 className="section-title mb-4">Make Your Decision</h2>
+              <form onSubmit={handleMakeDecision} className="space-y-4">
+                <div>
+                  <label className="label">Which option did you choose?</label>
+                  <select name="selectedOption" required className="input-field">
+                    <option value="">Select an option...</option>
+                    {decision.options.map(opt => (
+                      <option key={opt.id} value={opt.label}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Confidence Level (0-100)</label>
+                  <input type="number" name="finalConfidence" required min="0" max="100" defaultValue="50" className="input-field" />
+                </div>
+                <div>
+                  <label className="label">Why did you choose this?</label>
+                  <textarea name="decisionRationale" required className="input-field h-24" placeholder="Record your rationale here..." />
+                </div>
+                <button type="submit" className="btn-primary w-full">Record Decision</button>
+              </form>
+            </div>
+          )}
+
+          {/* Record Outcome Form (Shows after decision is made) */}
+          {decision.status === 'AWAITING_OUTCOME' && (
+            <div className="card">
+              <h2 className="section-title mb-4">Record Outcome</h2>
+              <form onSubmit={handleRecordOutcome} className="space-y-4">
+                <div>
+                  <label className="label">What actually happened?</label>
+                  <textarea name="description" required className="input-field h-24" placeholder="Describe the actual outcome..." />
+                </div>
+                <div>
+                  <label className="label">Did it match expectations?</label>
+                  <select name="expectationMatch" required className="input-field">
+                    <option value="">Select...</option>
+                    <option value="BETTER">Better than expected</option>
+                    <option value="WORSE">Worse than expected</option>
+                    <option value="AS_EXPECTED">Exactly as expected</option>
+                    <option value="DIFFERENT">Completely different</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Satisfaction (1-5)</label>
+                  <input type="number" name="satisfaction" required min="1" max="5" defaultValue="3" className="input-field" />
+                </div>
+                <div>
+                  <label className="label">Any surprises? (Optional)</label>
+                  <textarea name="surprises" className="input-field h-20" />
+                </div>
+                <button type="submit" className="btn-primary w-full">Save Outcome</button>
+              </form>
+            </div>
+          )}
+
+          {/* AI Replay (Shows after outcome is recorded) */}
+          {decision.status === 'OUTCOME_RECORDED' && (
+            <div className="card text-center py-10 space-y-4">
+              <h2 className="section-title text-2xl">Ready for AI Replay</h2>
+              <p className="text-surface-600 max-w-lg mx-auto">
+                Now that you've recorded the outcome, Gemini can evaluate your original decision-making process to help you learn and improve.
+              </p>
+              <button onClick={handleGenerateReplay} className="btn-primary">Generate AI Replay</button>
+            </div>
+          )}
+
+          {/* Completed Replay View */}
+          {decision.replay && (
+            <div className="card bg-purple-50/30">
+              <h2 className="section-title mb-4 flex items-center gap-2">🧠 AI Decision Replay</h2>
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <strong className="block text-sm text-surface-600 mb-1">What you got right</strong>
+                  <ul className="list-disc pl-4 text-green-700 space-y-1">
+                    {decision.replay.gotRight.map((item, i) => <li key={i}>{item}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <strong className="block text-sm text-surface-600 mb-1">What you misjudged</strong>
+                  <ul className="list-disc pl-4 text-red-700 space-y-1">
+                    {decision.replay.misjudged.map((item, i) => <li key={i}>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
+              <div className="mb-4">
+                <strong className="block text-sm text-surface-600 mb-1">Reflection</strong>
+                <p className="text-surface-800">{decision.replay.reflection}</p>
+              </div>
+              <div className="pt-4 border-t border-surface-200 mt-6">
+                <strong className="block text-sm text-surface-600 mb-2">Decision Quality Score</strong>
+                <div className="flex items-center gap-4">
+                  <div className="text-3xl font-bold text-brand-600">{decision.replay.decisionQuality}/100</div>
+                  <p className="text-sm text-surface-500 italic">{decision.replay.qualityReasons[0]}</p>
+                </div>
               </div>
             </div>
           )}
