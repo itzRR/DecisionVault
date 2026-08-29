@@ -1,0 +1,11 @@
+.env
+node_modules/
+dist/
+data/
+.firebase/
+*-service-account*.json
+serviceAccountKey.json
+*.log
+.vscode/
+.idea/
+.git/

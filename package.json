@@ -1,0 +1,19 @@
+{
+  "name": "decisionvault",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered decision tracking application — Decide. Record. Learn.",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue.bold,green.bold \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "start": "cd server && node dist/index.js",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "lint": "cd client && npm run lint && cd ../server && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

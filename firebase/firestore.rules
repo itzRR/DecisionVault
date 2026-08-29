@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ==============================================
+    // DecisionVault does NOT use Cloud Firestore.
+    // All data is stored in a server-side SQLite database.
+    // This rules file is included for completeness and 
+    // to explicitly deny all direct client access.
+    // ==============================================
+    
+    // DENY ALL ACCESS — no client should directly access Firestore
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
