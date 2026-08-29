@@ -18,7 +18,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173',
