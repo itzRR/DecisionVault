@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </div>
           <div className="card">
             <h3 className="label">Avg Quality</h3>
-            <p className="text-2xl font-bold">{stats.averageQuality !== null ? stats.averageQuality.toFixed(1) : '-'}</p>
+            <p className="text-2xl font-bold">{stats.averageQuality != null ? stats.averageQuality.toFixed(1) : '-'}</p>
           </div>
         </div>
       )}
