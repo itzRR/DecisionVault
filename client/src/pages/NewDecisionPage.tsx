@@ -103,7 +103,38 @@ export default function NewDecisionPage() {
           <button type="button" onClick={addOption} className="btn-secondary flex items-center gap-2"><Plus size={16} /> Add Option</button>
         </div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+        <div className="card space-y-4">
+          <h2 className="section-title">What's important to you? (Priorities)</h2>
+          <div className="flex flex-wrap gap-3">
+            {PRIORITIES.map(priority => {
+              const isSelected = formData.priorities.includes(priority);
+              return (
+                <button
+                  key={priority}
+                  type="button"
+                  onClick={() => {
+                    const newPriorities = isSelected 
+                      ? formData.priorities.filter(p => p !== priority)
+                      : [...formData.priorities, priority];
+                    setFormData({ ...formData, priorities: newPriorities });
+                  }}
+                  className={`px-4 py-2 rounded-full border-2 transition-all font-medium ${
+                    isSelected 
+                      ? 'bg-brand-50 border-brand-500 text-brand-700 shadow-sm' 
+                      : 'bg-white border-surface-200 text-surface-600 hover:border-brand-300'
+                  }`}
+                >
+                  {priority}
+                </button>
+              );
+            })}
+          </div>
+          {formData.priorities.length === 0 && (
+            <p className="text-red-500 text-sm">Please select at least one priority.</p>
+          )}
+        </div>
+
+        <button type="submit" disabled={loading || formData.priorities.length === 0} className="btn-primary w-full py-3">
           {loading ? 'Creating...' : 'Create Decision'}
         </button>
       </form>
