@@ -17,6 +17,9 @@ import exportRoutes from './routes/export';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust the Google Cloud Run proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false,
