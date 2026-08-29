@@ -20,6 +20,8 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false,
 }));
 
 const corsOptions = {
