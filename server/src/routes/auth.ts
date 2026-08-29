@@ -7,7 +7,7 @@ const router = Router();
 router.post('/session', authMiddleware, async (req, res, next) => {
   try {
     const user = req.user!;
-    const dbUser = createOrUpdateUser(user.uid, user.email || '', user.name, user.picture);
+    const dbUser = await createOrUpdateUser(user.uid, user.email || '', user.name, user.picture);
     res.json({ success: true, data: dbUser });
   } catch (error) {
     next(error);
@@ -16,7 +16,7 @@ router.post('/session', authMiddleware, async (req, res, next) => {
 
 router.get('/me', authMiddleware, async (req, res, next) => {
   try {
-    const dbUser = getUser(req.user!.uid);
+    const dbUser = await getUser(req.user!.uid);
     if (!dbUser) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
@@ -28,7 +28,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 
 router.put('/preferences', authMiddleware, async (req, res, next) => {
   try {
-    const updated = updatePreferences(req.user!.uid, req.body);
+    const updated = await updatePreferences(req.user!.uid, req.body);
     res.json({ success: true, data: updated });
   } catch (error) {
     next(error);
@@ -37,7 +37,7 @@ router.put('/preferences', authMiddleware, async (req, res, next) => {
 
 router.delete('/account', authMiddleware, async (req, res, next) => {
   try {
-    deleteUser(req.user!.uid);
+    await deleteUser(req.user!.uid);
     res.json({ success: true, message: 'Account deleted successfully' });
   } catch (error) {
     next(error);
